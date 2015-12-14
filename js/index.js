@@ -1,8 +1,14 @@
 var Filters = require('./filters');
 var LinkList = require('./linklist');
 var TableTrip = require('./tabletrip');
+var busTripStore = require('./busTripAction');
+var Reflux = require('reflux');
+
 
 var LinesList = React.createClass({displayName: "LinesList",
+
+	mixins: [Reflux.connect(busTripStore,"lines")],
+
 	// default state
 	getInitialState: function() {
 		return {
@@ -18,36 +24,11 @@ var LinesList = React.createClass({displayName: "LinesList",
 		window.location.hash = '#'+filterValue;
 	},
 	componentDidMount: function() {
-		var self = this;
-
-		// ajax
-		$.get(this.props.source, function(result) {
-			var collection = result;
-			if (this.isMounted()) {
-				this.setState({
-					lines: collection
-				});
-			}
-		}.bind(this));
+		
 	},
 	render: function() {
 
-		// var data
-		var lines = this.state.lines || [];
-
-		// convert searchString
-		searchString = this.state.searchString.trim().toLowerCase();
-
-		// verific if name of line our number line
-		if($.isNumeric(searchString)){
-			lines = lines.filter(function(l){
-				return l.routeShortName.toLowerCase().match( searchString );
-			});
-		} else {
-			lines = lines.filter(function(l){
-				return l.routeLongName.toLowerCase().match( searchString );
-			});
-		}
+		var lines = this.state.lines;
 
 		// verific length result
 		var contentLines;
