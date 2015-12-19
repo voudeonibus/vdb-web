@@ -44,7 +44,6 @@ var busTripStore = Reflux.createStore({
             url: 'data.json',
             async: false,
             success : function(data) {
-                data = [];
                 this.data = data;
                 this.trigger(this.data);
             }.bind(this)

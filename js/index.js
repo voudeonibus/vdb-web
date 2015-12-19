@@ -15,7 +15,6 @@ var LinesList = React.createClass({displayName: "LinesList",
 	// default state
 	getInitialState: function() {
 		return {
-			lines: [],
 			searchString: window.location.hash.replace('#','')
 		};
 	},
@@ -27,6 +26,7 @@ var LinesList = React.createClass({displayName: "LinesList",
 		window.location.hash = '#'+filterValue;
 	},
 	componentDidMount: function() {
+		
 	},
 	render: function() {
 

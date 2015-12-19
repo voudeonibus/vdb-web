@@ -3,9 +3,11 @@ var TableTrip = React.createClass({
 	render: function() {
 		return(
 				<table class="table">
-					<tr>
-						<th>{this.props.nameTrip}</th>
-					</tr>
+					<tbody>
+						<tr>
+							<th>{this.props.nameTrip}</th>
+						</tr>
+					</tbody>
 				</table>
 			);
 	}

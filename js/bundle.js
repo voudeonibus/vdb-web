@@ -61,7 +61,6 @@
 		// default state
 		getInitialState: function() {
 			return {
-				lines: [],
 				searchString: window.location.hash.replace('#','')
 			};
 		},
@@ -73,6 +72,7 @@
 			window.location.hash = '#'+filterValue;
 		},
 		componentDidMount: function() {
+			
 		},
 		render: function() {
 
@@ -1581,8 +1581,10 @@
 		render: function() {
 			return(
 					React.createElement("table", {class: "table"}, 
-						React.createElement("tr", null, 
-							React.createElement("th", null, this.props.nameTrip)
+						React.createElement("tbody", null, 
+							React.createElement("tr", null, 
+								React.createElement("th", null, this.props.nameTrip)
+							)
 						)
 					)
 				);
@@ -1590,6 +1592,7 @@
 	});
 
 	module.exports = TableTrip;
+
 
 /***/ },
 /* 23 */
@@ -1641,7 +1644,6 @@
 	            url: 'data.json',
 	            async: false,
 	            success : function(data) {
-	                data = [];
 	                this.data = data;
 	                this.trigger(this.data);
 	            }.bind(this)
