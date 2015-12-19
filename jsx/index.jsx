@@ -4,7 +4,7 @@ var Reflux = require('reflux');
 var Filters = require('./filters');
 var LinkList = require('./linklist');
 var TableTrip = require('./tabletrip');
-var busTripStore = require('./busTripAction');
+var busTripStore = require('./busTripAction').store;
 
 // const TextField = require('material-ui/lib/text-field');
 
@@ -38,7 +38,7 @@ var LinesList = React.createClass({
 			contentLines =  <p>Nenhuma linha encontrada</p>;
 		} else {
 			contentLines = lines.map(function(line){
-				return <LinkList numberLine={line.routeShortName} nameLine={line.routeLongName} /> 
+				return <LinkList numberLine={line.routeShortName} nameLine={line.routeLongName} />
 			});
 		}
 
@@ -55,7 +55,7 @@ var LinesList = React.createClass({
 				<div className="col-xs-9" id="list-trip">
 					{lines.map(function(line){
                         var lineTrips = line.trips.map(function(trip){
-                            return <TableTrip nameTrip={trip.headsign} /> 
+                            return <TableTrip nameTrip={trip.headsign} />
                         });
 						return <div>
 							 <h3>{line.routeLongName}</h3>
@@ -72,4 +72,3 @@ ReactDOM.render( <LinesList source="data.json" />, document.getElementById('app'
 
 
 module.exports = LinesList;
-

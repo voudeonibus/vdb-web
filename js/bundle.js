@@ -50,7 +50,7 @@
 	var Filters = __webpack_require__(20);
 	var LinkList = __webpack_require__(21);
 	var TableTrip = __webpack_require__(22);
-	var busTripStore = __webpack_require__(23);
+	var busTripStore = __webpack_require__(23).store;
 
 	// const TextField = require('material-ui/lib/text-field');
 
@@ -84,7 +84,7 @@
 				contentLines =  React.createElement("p", null, "Nenhuma linha encontrada");
 			} else {
 				contentLines = lines.map(function(line){
-					return React.createElement(LinkList, {numberLine: line.routeShortName, nameLine: line.routeLongName}) 
+					return React.createElement(LinkList, {numberLine: line.routeShortName, nameLine: line.routeLongName})
 				});
 			}
 
@@ -101,7 +101,7 @@
 					React.createElement("div", {className: "col-xs-9", id: "list-trip"}, 
 						lines.map(function(line){
 	                        var lineTrips = line.trips.map(function(trip){
-	                            return React.createElement(TableTrip, {nameTrip: trip.headsign}) 
+	                            return React.createElement(TableTrip, {nameTrip: trip.headsign})
 	                        });
 							return React.createElement("div", null, 
 								 React.createElement("h3", null, line.routeLongName), 
@@ -118,7 +118,6 @@
 
 
 	module.exports = LinesList;
-
 
 
 /***/ },
@@ -1596,15 +1595,15 @@
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(module) {var Reflux = __webpack_require__(1);
+	var Reflux = __webpack_require__(1);
 
 	var busTripAction = Reflux.createActions([
-	    "searchLine",     
+	    "searchLine",
 	    "selectLine"
 	]);
 
 	var busTripStore = Reflux.createStore({
-	    listenables: [busTripAction], 
+	    listenables: [busTripAction],
 	    onSearchLine: function(searchString) {
 
 	        // convert searchString
@@ -1652,25 +1651,8 @@
 	    }
 	});
 
-	module.export = busTripStore;
-
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)(module)))
-
-/***/ },
-/* 24 */
-/***/ function(module, exports) {
-
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
+	module.exports.actions = busTripAction;
+	module.exports.store = busTripStore;
 
 
 /***/ }

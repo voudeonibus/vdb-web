@@ -4,7 +4,7 @@ var Reflux = require('reflux');
 var Filters = require('./filters');
 var LinkList = require('./linklist');
 var TableTrip = require('./tabletrip');
-var busTripStore = require('./busTripAction');
+var busTripStore = require('./busTripAction').store;
 
 // const TextField = require('material-ui/lib/text-field');
 
@@ -38,7 +38,7 @@ var LinesList = React.createClass({displayName: "LinesList",
 			contentLines =  React.createElement("p", null, "Nenhuma linha encontrada");
 		} else {
 			contentLines = lines.map(function(line){
-				return React.createElement(LinkList, {numberLine: line.routeShortName, nameLine: line.routeLongName}) 
+				return React.createElement(LinkList, {numberLine: line.routeShortName, nameLine: line.routeLongName})
 			});
 		}
 
@@ -55,7 +55,7 @@ var LinesList = React.createClass({displayName: "LinesList",
 				React.createElement("div", {className: "col-xs-9", id: "list-trip"}, 
 					lines.map(function(line){
                         var lineTrips = line.trips.map(function(trip){
-                            return React.createElement(TableTrip, {nameTrip: trip.headsign}) 
+                            return React.createElement(TableTrip, {nameTrip: trip.headsign})
                         });
 						return React.createElement("div", null, 
 							 React.createElement("h3", null, line.routeLongName), 
@@ -72,4 +72,3 @@ ReactDOM.render( React.createElement(LinesList, {source: "data.json"}), document
 
 
 module.exports = LinesList;
-
