@@ -1,13 +1,16 @@
+var Reflux = require('reflux');
+
+// components
 var Filters = require('./filters');
 var LinkList = require('./linklist');
 var TableTrip = require('./tabletrip');
 var busTripStore = require('./busTripAction');
-var Reflux = require('reflux');
 
+// const TextField = require('material-ui/lib/text-field');
 
 var LinesList = React.createClass({displayName: "LinesList",
 
-	mixins: [Reflux.connect(busTripStore,"lines")],
+	mixins: [Reflux.connect(busTripStore, 'lines')],
 
 	// default state
 	getInitialState: function() {
@@ -24,7 +27,6 @@ var LinesList = React.createClass({displayName: "LinesList",
 		window.location.hash = '#'+filterValue;
 	},
 	componentDidMount: function() {
-		
 	},
 	render: function() {
 
@@ -43,6 +45,7 @@ var LinesList = React.createClass({displayName: "LinesList",
 		// return dom
 		return (
 			React.createElement("div", null, 
+
 				React.createElement("div", {className: "col-xs-3", id: "list-lines"}, 
 					React.createElement(Filters, {updateFilter: this.handleFilterUpdate, placeString: this.state.searchString}), 
 					React.createElement("ul", {className: "list-group"}, 
