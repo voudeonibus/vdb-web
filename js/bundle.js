@@ -44,19 +44,16 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Reflux = __webpack_require__(1);
+	var Filters = __webpack_require__(1);
+	var LinkList = __webpack_require__(2);
+	var TableTrip = __webpack_require__(3);
+	var busTripStore = __webpack_require__(4).store;
+	var Reflux = __webpack_require__(5);
 
-	// components
-	var Filters = __webpack_require__(20);
-	var LinkList = __webpack_require__(21);
-	var TableTrip = __webpack_require__(22);
-	var busTripStore = __webpack_require__(23).store;
-
-	// const TextField = require('material-ui/lib/text-field');
 
 	var LinesList = React.createClass({displayName: "LinesList",
 
-		mixins: [Reflux.connect(busTripStore, 'lines')],
+		mixins: [Reflux.connect(busTripStore,"lines")],
 
 		// default state
 		getInitialState: function() {
@@ -72,7 +69,7 @@
 			window.location.hash = '#'+filterValue;
 		},
 		componentDidMount: function() {
-			
+
 		},
 		render: function() {
 
@@ -91,7 +88,6 @@
 			// return dom
 			return (
 				React.createElement("div", null, 
-
 					React.createElement("div", {className: "col-xs-3", id: "list-lines"}, 
 						React.createElement(Filters, {updateFilter: this.handleFilterUpdate, placeString: this.state.searchString}), 
 						React.createElement("ul", {className: "list-group"}, 
@@ -100,14 +96,12 @@
 					), 
 					React.createElement("div", {className: "col-xs-9", id: "list-trip"}, 
 						lines.map(function(line){
-	                        var lineTrips = line.trips.map(function(trip){
-	                            return React.createElement(TableTrip, {nameTrip: trip.headsign})
-	                        });
-							return React.createElement("div", null, 
-								 React.createElement("h3", null, line.routeLongName), 
-								lineTrips
-							)
-	                    })
+	          	var lineTrips = line.trips.map(function(trip){
+	            	return React.createElement(TableTrip, {nameTrip: trip.headsign})
+	            });
+							
+							return (React.createElement("div", null, React.createElement("h3", null, line.routeLongName), lineTrips))
+	          })
 					)
 				)
 			);
@@ -117,30 +111,163 @@
 	ReactDOM.render( React.createElement(LinesList, {source: "data.json"}), document.getElementById('app'));
 
 
-	module.exports = LinesList;
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	var Filters = React.createClass({displayName: "Filters",
+		handleChange: function(e){
+			// change state searchString
+			var filterInput = e.target.value;
+			this.props.updateFilter(filterInput);
+		},
+		render: function() {
+			// console.log(this.state.searchString)
+			return (
+				React.createElement("div", null, 
+					React.createElement("input", {className: "form-control", type: "text", onChange: this.handleChange, value: this.props.placeString, placeholder: "Procure aqui"})
+				)
+			)}
+		});
+	module.exports = Filters;
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	var LinkList =  React.createClass({displayName: "LinkList",
+		getInitialState: function() {
+			return {
+				thisActive : false
+			}
+		},
+		handleTrip: function(e,i) {
+			// var thisTrip = e.target.data('trip');
+			this.setState({
+				thisActive: !this.state.thisActive
+			});
+			console.log(i);
+		},
+		render: function(){
+			return(
+				React.createElement("a", {href: "javascript:void(0)", 
+					onClick: this.handleTrip, 
+					className: this.state.thisActive ? 'list-group-item active' : 'list-group-item', 
+					"data-trip": this.props.numberLine}, 
+					React.createElement("span", {className: "label label-primary"}, this.props.numberLine), this.props.nameLine
+				)
+			);
+		}
+	});
+
+	module.exports = LinkList;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	
+	var TableTrip = React.createClass({displayName: "TableTrip",
+		render: function() {
+			return(
+					React.createElement("table", {class: "table"}, 
+						React.createElement("tbody", null, 
+							React.createElement("tr", null, 
+								React.createElement("th", null, this.props.nameTrip)
+							)
+						)
+					)
+				);
+		}
+	});
+
+	module.exports = TableTrip;
 
 
 /***/ },
-/* 1 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Reflux = __webpack_require__(2);
+	var Reflux = __webpack_require__(5);
 
-	Reflux.connect = __webpack_require__(15);
+	var busTripAction = Reflux.createActions([
+	    "searchLine",
+	    "selectLine"
+	]);
 
-	Reflux.connectFilter = __webpack_require__(17);
+	var busTripStore = Reflux.createStore({
+	    listenables: [busTripAction],
+	    onSearchLine: function(searchString) {
 
-	Reflux.ListenerMixin = __webpack_require__(16);
+	        // convert searchString
+	        searchString = searchString.trim().toLowerCase();
 
-	Reflux.listenTo = __webpack_require__(18);
+	        // verific if name of line our number line
+	        var filterData;
+	        if($.isNumeric(searchString)){
+	            filterData = this.data.filter(function(l){
+	                return l.routeShortName.toLowerCase().match( searchString );
+	            });
+	        } else {
+	            filterData = this.data.filter(function(l){
+	                return l.routeLongName.toLowerCase().match( searchString );
+	            });
+	        }
 
-	Reflux.listenToMany = __webpack_require__(19);
+	        // dispara os dados
+	        this.trigger(filterData);
+
+	    },
+	    onSelectLine: function() {
+	    },
+	    // called whenever we change a list. normally this would mean a database API call
+	    updateList: function(list){
+	        localStorage.setItem(localStorageKey, JSON.stringify(list));
+	        // if we used a real database, we would likely do the below in a callback
+	        this.list = list;
+	        this.trigger(list); // sends the updated list to all listening components (TodoApp)
+	        console.log(list)
+	    },
+	    getInitialState: function() {
+
+	        $.ajax({
+	            url: 'data.json',
+	            async: false,
+	            success : function(data) {
+	                this.data = data;
+	                this.trigger(this.data);
+	            }.bind(this)
+	        });
+
+	        return this.data;
+	    }
+	});
+
+	module.exports.actions = busTripAction;
+	module.exports.store = busTripStore;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Reflux = __webpack_require__(6);
+
+	Reflux.connect = __webpack_require__(19);
+
+	Reflux.connectFilter = __webpack_require__(21);
+
+	Reflux.ListenerMixin = __webpack_require__(20);
+
+	Reflux.listenTo = __webpack_require__(22);
+
+	Reflux.listenToMany = __webpack_require__(23);
 
 	module.exports = Reflux;
 
 
 /***/ },
-/* 2 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -154,19 +281,19 @@
 	    }
 	};
 
-	Reflux.ActionMethods = __webpack_require__(3);
+	Reflux.ActionMethods = __webpack_require__(7);
 
-	Reflux.ListenerMethods = __webpack_require__(4);
+	Reflux.ListenerMethods = __webpack_require__(8);
 
-	Reflux.PublisherMethods = __webpack_require__(13);
+	Reflux.PublisherMethods = __webpack_require__(17);
 
-	Reflux.StoreMethods = __webpack_require__(12);
+	Reflux.StoreMethods = __webpack_require__(16);
 
-	Reflux.createAction = __webpack_require__(14);
+	Reflux.createAction = __webpack_require__(18);
 
-	Reflux.createStore = __webpack_require__(8);
+	Reflux.createStore = __webpack_require__(12);
 
-	var maker = __webpack_require__(7).staticJoinCreator;
+	var maker = __webpack_require__(11).staticJoinCreator;
 
 	Reflux.joinTrailing = Reflux.all = maker("last"); // Reflux.all alias for backward compatibility
 
@@ -176,7 +303,7 @@
 
 	Reflux.joinConcat = maker("all");
 
-	var _ = Reflux.utils = __webpack_require__(5);
+	var _ = Reflux.utils = __webpack_require__(9);
 
 	Reflux.EventEmitter = _.EventEmitter;
 
@@ -235,7 +362,7 @@
 	 * Provides the set of created actions and stores for introspection
 	 */
 	/*eslint-disable no-underscore-dangle*/
-	Reflux.__keep = __webpack_require__(9);
+	Reflux.__keep = __webpack_require__(13);
 	/*eslint-enable no-underscore-dangle*/
 
 	/**
@@ -249,7 +376,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 3 */
+/* 7 */
 /***/ function(module, exports) {
 
 	/**
@@ -261,13 +388,13 @@
 	module.exports = {};
 
 /***/ },
-/* 4 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _ = __webpack_require__(5),
-	    maker = __webpack_require__(7).instanceJoinCreator;
+	var _ = __webpack_require__(9),
+	    maker = __webpack_require__(11).instanceJoinCreator;
 
 	/**
 	 * Extract child listenables from a parent from their
@@ -499,7 +626,7 @@
 	};
 
 /***/ },
-/* 5 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -558,7 +685,7 @@
 	    return typeof value === "function";
 	}
 
-	exports.EventEmitter = __webpack_require__(6);
+	exports.EventEmitter = __webpack_require__(10);
 
 	exports.nextTick = function (callback) {
 	    setTimeout(callback, 0);
@@ -584,7 +711,7 @@
 	}
 
 /***/ },
-/* 6 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -852,7 +979,7 @@
 
 
 /***/ },
-/* 7 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -861,8 +988,8 @@
 
 	"use strict";
 
-	var createStore = __webpack_require__(8),
-	    _ = __webpack_require__(5);
+	var createStore = __webpack_require__(12),
+	    _ = __webpack_require__(9);
 
 	var slice = Array.prototype.slice,
 	    strategyMethodNames = {
@@ -973,15 +1100,15 @@
 	}
 
 /***/ },
-/* 8 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _ = __webpack_require__(5),
-	    Keep = __webpack_require__(9),
-	    mixer = __webpack_require__(10),
-	    bindMethods = __webpack_require__(11);
+	var _ = __webpack_require__(9),
+	    Keep = __webpack_require__(13),
+	    mixer = __webpack_require__(14),
+	    bindMethods = __webpack_require__(15);
 
 	var allowed = { preEmit: 1, shouldEmit: 1 };
 
@@ -995,9 +1122,9 @@
 	 */
 	module.exports = function (definition) {
 
-	    var StoreMethods = __webpack_require__(12),
-	        PublisherMethods = __webpack_require__(13),
-	        ListenerMethods = __webpack_require__(4);
+	    var StoreMethods = __webpack_require__(16),
+	        PublisherMethods = __webpack_require__(17),
+	        ListenerMethods = __webpack_require__(8);
 
 	    definition = definition || {};
 
@@ -1042,7 +1169,7 @@
 	};
 
 /***/ },
-/* 9 */
+/* 13 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1061,12 +1188,12 @@
 	};
 
 /***/ },
-/* 10 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 	module.exports = function mix(def) {
 	    var composed = {
@@ -1125,7 +1252,7 @@
 	};
 
 /***/ },
-/* 11 */
+/* 15 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1155,7 +1282,7 @@
 	};
 
 /***/ },
-/* 12 */
+/* 16 */
 /***/ function(module, exports) {
 
 	/**
@@ -1167,12 +1294,12 @@
 	module.exports = {};
 
 /***/ },
-/* 13 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 	/**
 	 * A module of methods for object that you want to be able to listen to.
@@ -1269,15 +1396,15 @@
 	};
 
 /***/ },
-/* 14 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _ = __webpack_require__(5),
-	    ActionMethods = __webpack_require__(3),
-	    PublisherMethods = __webpack_require__(13),
-	    Keep = __webpack_require__(9);
+	var _ = __webpack_require__(9),
+	    ActionMethods = __webpack_require__(7),
+	    PublisherMethods = __webpack_require__(17),
+	    Keep = __webpack_require__(13);
 
 	var allowed = { preEmit: 1, shouldEmit: 1 };
 
@@ -1340,12 +1467,12 @@
 	module.exports = createAction;
 
 /***/ },
-/* 15 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ListenerMethods = __webpack_require__(4),
-	    ListenerMixin = __webpack_require__(16),
-	    _ = __webpack_require__(5);
+	var ListenerMethods = __webpack_require__(8),
+	    ListenerMixin = __webpack_require__(20),
+	    _ = __webpack_require__(9);
 
 	module.exports = function(listenable,key){
 	    return {
@@ -1373,11 +1500,11 @@
 
 
 /***/ },
-/* 16 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5),
-	    ListenerMethods = __webpack_require__(4);
+	var _ = __webpack_require__(9),
+	    ListenerMethods = __webpack_require__(8);
 
 	/**
 	 * A module meant to be consumed as a mixin by a React component. Supplies the methods from
@@ -1396,12 +1523,12 @@
 
 
 /***/ },
-/* 17 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ListenerMethods = __webpack_require__(4),
-	    ListenerMixin = __webpack_require__(16),
-	    _ = __webpack_require__(5);
+	var ListenerMethods = __webpack_require__(8),
+	    ListenerMixin = __webpack_require__(20),
+	    _ = __webpack_require__(9);
 
 	module.exports = function(listenable, key, filterFunc) {
 	    filterFunc = _.isFunction(key) ? key : filterFunc;
@@ -1442,10 +1569,10 @@
 
 
 /***/ },
-/* 18 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ListenerMethods = __webpack_require__(4);
+	var ListenerMethods = __webpack_require__(8);
 
 	/**
 	 * A mixin factory for a React component. Meant as a more convenient way of using the `ListenerMixin`,
@@ -1483,10 +1610,10 @@
 
 
 /***/ },
-/* 19 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ListenerMethods = __webpack_require__(4);
+	var ListenerMethods = __webpack_require__(8);
 
 	/**
 	 * A mixin factory for a React component. Meant as a more convenient way of using the `listenerMixin`,
@@ -1519,142 +1646,6 @@
 	        componentWillUnmount: ListenerMethods.stopListeningToAll
 	    };
 	};
-
-
-/***/ },
-/* 20 */
-/***/ function(module, exports) {
-
-	var Filters = React.createClass({displayName: "Filters",
-		handleChange: function(e){
-			// change state searchString
-			var filterInput = e.target.value;
-			this.props.updateFilter(filterInput);
-		},
-		render: function() {
-			// console.log(this.state.searchString)
-			return (
-				React.createElement("div", null, 
-					React.createElement("input", {className: "form-control", type: "text", onChange: this.handleChange, value: this.props.placeString, placeholder: "Procure aqui"})
-				)
-			)}
-		});
-	module.exports = Filters;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports) {
-
-	var LinkList =  React.createClass({displayName: "LinkList",
-		getInitialState: function() {
-			return {
-				thisActive : false
-			}
-		},
-		handleTrip: function(e,i) {
-			// var thisTrip = e.target.data('trip');
-			this.setState({
-				thisActive: !this.state.thisActive
-			});
-			console.log(i);
-		},
-		render: function(){
-			return(
-				React.createElement("a", {href: "javascript:void(0)", 
-					onClick: this.handleTrip, 
-					className: this.state.thisActive ? 'list-group-item active' : 'list-group-item', 
-					"data-trip": this.props.numberLine}, 
-					React.createElement("span", {className: "label label-primary"}, this.props.numberLine), this.props.nameLine
-				)
-			);
-		}
-	});
-
-	module.exports = LinkList;
-
-/***/ },
-/* 22 */
-/***/ function(module, exports) {
-
-	
-	var TableTrip = React.createClass({displayName: "TableTrip",
-		render: function() {
-			return(
-					React.createElement("table", {class: "table"}, 
-						React.createElement("tbody", null, 
-							React.createElement("tr", null, 
-								React.createElement("th", null, this.props.nameTrip)
-							)
-						)
-					)
-				);
-		}
-	});
-
-	module.exports = TableTrip;
-
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Reflux = __webpack_require__(1);
-
-	var busTripAction = Reflux.createActions([
-	    "searchLine",
-	    "selectLine"
-	]);
-
-	var busTripStore = Reflux.createStore({
-	    listenables: [busTripAction],
-	    onSearchLine: function(searchString) {
-
-	        // convert searchString
-	        searchString = searchString.trim().toLowerCase();
-
-	        // verific if name of line our number line
-	        var filterData;
-	        if($.isNumeric(searchString)){
-	            filterData = this.data.filter(function(l){
-	                return l.routeShortName.toLowerCase().match( searchString );
-	            });
-	        } else {
-	            filterData = this.data.filter(function(l){
-	                return l.routeLongName.toLowerCase().match( searchString );
-	            });
-	        }
-
-	        // dispara os dados
-	        this.trigger(filterData);
-
-	    },
-	    onSelectLine: function() {
-	    },
-	    // called whenever we change a list. normally this would mean a database API call
-	    updateList: function(list){
-	        localStorage.setItem(localStorageKey, JSON.stringify(list));
-	        // if we used a real database, we would likely do the below in a callback
-	        this.list = list;
-	        this.trigger(list); // sends the updated list to all listening components (TodoApp)
-	        console.log(list)
-	    },
-	    getInitialState: function() {
-
-	        $.ajax({
-	            url: 'data.json',
-	            async: false,
-	            success : function(data) {
-	                this.data = data;
-	                this.trigger(this.data);
-	            }.bind(this)
-	        });
-
-	        return this.data;
-	    }
-	});
-
-	module.exports.actions = busTripAction;
-	module.exports.store = busTripStore;
 
 
 /***/ }
