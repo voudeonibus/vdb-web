@@ -1,21 +1,17 @@
-var Reflux = require('reflux');
-
-// components
 var Filters = require('./filters');
 var LinkList = require('./linklist');
 var TableTrip = require('./tabletrip');
-var busTripStore = require('./busTripAction');
+var busTripStore = require('./busTripAction').store;
+var Reflux = require('reflux');
 
-// const TextField = require('material-ui/lib/text-field');
 
 var LinesList = React.createClass({
 
-	mixins: [Reflux.connect(busTripStore, 'lines')],
+	mixins: [Reflux.connect(busTripStore,"lines")],
 
 	// default state
 	getInitialState: function() {
 		return {
-			lines: [],
 			searchString: window.location.hash.replace('#','')
 		};
 	},
@@ -27,6 +23,7 @@ var LinesList = React.createClass({
 		window.location.hash = '#'+filterValue;
 	},
 	componentDidMount: function() {
+
 	},
 	render: function() {
 
@@ -38,14 +35,13 @@ var LinesList = React.createClass({
 			contentLines =  <p>Nenhuma linha encontrada</p>;
 		} else {
 			contentLines = lines.map(function(line){
-				return <LinkList numberLine={line.routeShortName} nameLine={line.routeLongName} /> 
+				return <LinkList numberLine={line.routeShortName} nameLine={line.routeLongName} />
 			});
 		}
 
 		// return dom
 		return (
 			<div>
-
 				<div className="col-xs-3" id="list-lines">
 					<Filters updateFilter={this.handleFilterUpdate} placeString={this.state.searchString} />
 					<ul className="list-group">
@@ -54,14 +50,12 @@ var LinesList = React.createClass({
 				</div>
 				<div className="col-xs-9" id="list-trip">
 					{lines.map(function(line){
-                        var lineTrips = line.trips.map(function(trip){
-                            return <TableTrip nameTrip={trip.headsign} /> 
-                        });
-						return <div>
-							 <h3>{line.routeLongName}</h3>
-							{lineTrips}
-						</div>
-                    })}
+          	var lineTrips = line.trips.map(function(trip){
+            	return <TableTrip nameTrip={trip.headsign} />
+            });
+						
+						return (<div><h3>{line.routeLongName}</h3>{lineTrips}</div>)
+          })}
 				</div>
 			</div>
 		);
@@ -69,7 +63,3 @@ var LinesList = React.createClass({
 });
 
 ReactDOM.render( <LinesList source="data.json" />, document.getElementById('app'));
-
-
-module.exports = LinesList;
-

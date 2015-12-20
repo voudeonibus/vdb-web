@@ -1,12 +1,12 @@
 var Reflux = require('reflux');
 
 var busTripAction = Reflux.createActions([
-    "searchLine",     
+    "searchLine",
     "selectLine"
 ]);
 
 var busTripStore = Reflux.createStore({
-    listenables: [busTripAction], 
+    listenables: [busTripAction],
     onSearchLine: function(searchString) {
 
         // convert searchString
@@ -44,7 +44,6 @@ var busTripStore = Reflux.createStore({
             url: 'data.json',
             async: false,
             success : function(data) {
-                data = [];
                 this.data = data;
                 this.trigger(this.data);
             }.bind(this)
@@ -54,5 +53,5 @@ var busTripStore = Reflux.createStore({
     }
 });
 
-module.export = busTripStore;
-
+module.exports.actions = busTripAction;
+module.exports.store = busTripStore;
