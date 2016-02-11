@@ -36,7 +36,6 @@ var busTripStore = Reflux.createStore({
         // if we used a real database, we would likely do the below in a callback
         this.list = list;
         this.trigger(list); // sends the updated list to all listening components (TodoApp)
-        console.log(list)
     },
     getInitialState: function() {
 

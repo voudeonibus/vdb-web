@@ -50,16 +50,16 @@ var LinesList = React.createClass({displayName: "LinesList",
 				), 
 				React.createElement("div", {className: "col-xs-9", id: "list-trip"}, 
 					lines.map(function(line){
-          	var lineTrips = line.trips.map(function(trip){
-            	return React.createElement(TableTrip, {nameTrip: trip.headsign})
-            });
-						
+						var lineTrips = line.trips.map(function(trip){
+							return React.createElement(TableTrip, {nameTrip: trip.headsign})
+						});
+
 						return (React.createElement("div", null, React.createElement("h3", null, line.routeLongName), lineTrips))
-          })
+					})
 				)
 			)
 		);
 	}
 });
 
-ReactDOM.render( React.createElement(LinesList, {source: "data.json"}), document.getElementById('app'));
+ReactDOM.render( React.createElement(LinesList, null), document.getElementById('app'));

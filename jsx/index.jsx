@@ -50,16 +50,16 @@ var LinesList = React.createClass({
 				</div>
 				<div className="col-xs-9" id="list-trip">
 					{lines.map(function(line){
-          	var lineTrips = line.trips.map(function(trip){
-            	return <TableTrip nameTrip={trip.headsign} />
-            });
-						
+						var lineTrips = line.trips.map(function(trip){
+							return <TableTrip nameTrip={trip.headsign} />
+						});
+
 						return (<div><h3>{line.routeLongName}</h3>{lineTrips}</div>)
-          })}
+					})}
 				</div>
 			</div>
 		);
 	}
 });
 
-ReactDOM.render( <LinesList source="data.json" />, document.getElementById('app'));
+ReactDOM.render( <LinesList />, document.getElementById('app'));
