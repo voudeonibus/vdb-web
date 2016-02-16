@@ -45,11 +45,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Filters = __webpack_require__(1);
-	var LinkList = __webpack_require__(22);
-	var TableTrip = __webpack_require__(23);
-	var busTripStore = __webpack_require__(2).store;
+	var LinkList = __webpack_require__(23);
+	var TableTrip = __webpack_require__(24);
+	var busTripAction = __webpack_require__(2).actions;
+	var busTripStore = __webpack_require__(22).store;
 	var Reflux = __webpack_require__(3);
-
 
 	var LinesList = React.createClass({displayName: "LinesList",
 
@@ -57,8 +57,13 @@
 
 		// default state
 		getInitialState: function() {
+
+			// init hash search results
+			var filterInit = window.location.hash.replace('#','');
+			busTripAction.searchLine(filterInit);
+
 			return {
-				searchString: window.location.hash.replace('#','')
+				searchString: filterInit
 			};
 		},
 		handleFilterUpdate: function(filterValue) {
@@ -101,6 +106,7 @@
 							});
 
 							return (React.createElement("div", null, React.createElement("h3", null, line.routeLongName), lineTrips))
+							// return (<div><h3>{line.routeLongName}</h3></div>)
 						})
 					)
 				)
@@ -116,12 +122,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var busTripAction = __webpack_require__(2).actions;
+	var busTripStore = __webpack_require__(22).store;
 
 	var Filters = React.createClass({displayName: "Filters",
 		handleChange: function(e){
 			// change state searchString
 			var filterInput = e.target.value;
 			this.props.updateFilter(filterInput);
+			// update components
 			busTripAction.searchLine(filterInput);
 		},
 		render: function() {
@@ -144,56 +152,7 @@
 	    "selectLine"
 	]);
 
-	var busTripStore = Reflux.createStore({
-	    listenables: [busTripAction],
-	    onSearchLine: function(searchString) {
-
-	        // convert searchString
-	        searchString = searchString.trim().toLowerCase();
-
-	        // verific if name of line our number line
-	        var filterData;
-	        if($.isNumeric(searchString)){
-	            filterData = this.data.filter(function(l){
-	                return l.routeShortName.toLowerCase().match( searchString );
-	            });
-	        } else {
-	            filterData = this.data.filter(function(l){
-	                return l.routeLongName.toLowerCase().match( searchString );
-	            });
-	        }
-
-	        // dispara os dados
-	        this.trigger(filterData);
-
-	    },
-	    onSelectLine: function() {
-	    },
-	    // called whenever we change a list. normally this would mean a database API call
-	    updateList: function(list){
-	        localStorage.setItem(localStorageKey, JSON.stringify(list));
-	        // if we used a real database, we would likely do the below in a callback
-	        this.list = list;
-	        this.trigger(list); // sends the updated list to all listening components (TodoApp)
-	    },
-	    getInitialState: function() {
-
-	        $.ajax({
-	            url: 'data.json',
-	            async: false,
-	            success : function(data) {
-	                this.data = data;
-	                this.trigger(this.data);
-	            }.bind(this)
-	        });
-
-	        return this.data;
-	    }
-	});
-
 	module.exports.actions = busTripAction;
-	module.exports.store = busTripStore;
-
 
 /***/ },
 /* 3 */
@@ -1598,7 +1557,68 @@
 
 /***/ },
 /* 22 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
+
+	var Reflux = __webpack_require__(3);
+	var busTripAction = __webpack_require__(2).actions;
+
+	var busTripStore = Reflux.createStore({
+	    listenables: [busTripAction],
+	    onSearchLine: function(searchString) {
+
+	        // convert searchString
+	        searchString = searchString.trim().toLowerCase();
+
+	        // verific if name of line our number line
+	        var filterData;
+	        if($.isNumeric(searchString)){
+	            filterData = this.data.filter(function(l){
+	                return l.routeShortName.toLowerCase().match( searchString );
+	            });
+	        } else {
+	            filterData = this.data.filter(function(l){
+	                return l.routeLongName.toLowerCase().match( searchString );
+	            });
+	        }
+
+	        // dispara os dados
+	        this.trigger(filterData);
+
+	    },
+	    onSelectLine: function(selectString) {
+	        console.log(selectString)
+	    },
+	    // called whenever we change a list. normally this would mean a database API call
+	    // updateList: function(list){
+	    //     localStorage.setItem(localStorageKey, JSON.stringify(list));
+	    //     // if we used a real database, we would likely do the below in a callback
+	    //     this.list = list;
+	    //     this.trigger(list); // sends the updated list to all listening components (TodoApp)
+	    // },
+	    getInitialState: function() {
+
+	        $.ajax({
+	            url: 'data.json',
+	            async: false,
+	            success : function(data) {
+	                this.data = data;
+	                this.trigger(this.data);
+	            }.bind(this)
+	        });
+
+	        return this.data;
+	    }
+	});
+
+	module.exports.store = busTripStore;
+
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var busTripAction = __webpack_require__(2).actions;
+	var busTripStore = __webpack_require__(22).store;
 
 	var LinkList =  React.createClass({displayName: "LinkList",
 		getInitialState: function() {
@@ -1606,17 +1626,18 @@
 				thisActive : false
 			}
 		},
-		handleTrip: function(e,i) {
-			// var thisTrip = e.target.data('trip');
+		handleTrip: function(selectLine) {
+			// change active
 			this.setState({
 				thisActive: !this.state.thisActive
 			});
-			console.log(i);
+			// update components
+			busTripAction.selectLine(selectLine);
 		},
 		render: function(){
 			return(
 				React.createElement("a", {href: "javascript:void(0)", 
-					onClick: this.handleTrip, 
+					onClick: this.handleTrip.bind(this, this.props.numberLine), 
 					className: this.state.thisActive ? 'list-group-item active' : 'list-group-item', 
 					"data-trip": this.props.numberLine}, 
 					React.createElement("span", {className: "label label-primary"}, this.props.numberLine), this.props.nameLine
@@ -1628,21 +1649,21 @@
 	module.exports = LinkList;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports) {
 
 	
 	var TableTrip = React.createClass({displayName: "TableTrip",
 		render: function() {
 			return(
-					React.createElement("table", {class: "table"}, 
-						React.createElement("tbody", null, 
-							React.createElement("tr", null, 
-								React.createElement("th", null, this.props.nameTrip)
-							)
+				React.createElement("table", {class: "table"}, 
+					React.createElement("tbody", null, 
+						React.createElement("tr", null, 
+							React.createElement("th", null, this.props.nameTrip)
 						)
 					)
-				);
+				)
+			);
 		}
 	});
 

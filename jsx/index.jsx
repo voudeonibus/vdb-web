@@ -1,9 +1,9 @@
-var Filters = require('./filters');
-var LinkList = require('./linklist');
-var TableTrip = require('./tabletrip');
-var busTripStore = require('./busTripAction').store;
+var Filters = require('./components/filters');
+var LinkList = require('./components/linklist');
+var TableTrip = require('./components/tabletrip');
+var busTripAction = require('./busTripAction').actions;
+var busTripStore = require('./busTripStore').store;
 var Reflux = require('reflux');
-
 
 var LinesList = React.createClass({
 
@@ -11,8 +11,13 @@ var LinesList = React.createClass({
 
 	// default state
 	getInitialState: function() {
+
+		// init hash search results
+		var filterInit = window.location.hash.replace('#','');
+		busTripAction.searchLine(filterInit);
+
 		return {
-			searchString: window.location.hash.replace('#','')
+			searchString: filterInit
 		};
 	},
 	handleFilterUpdate: function(filterValue) {
@@ -55,6 +60,7 @@ var LinesList = React.createClass({
 						});
 
 						return (<div><h3>{line.routeLongName}</h3>{lineTrips}</div>)
+						// return (<div><h3>{line.routeLongName}</h3></div>)
 					})}
 				</div>
 			</div>
